@@ -34,7 +34,7 @@ class OmicronApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.red,
-        textTheme: GoogleFonts.robotoTextTheme(),
+        textTheme: GoogleFonts.interTightTextTheme(),
         scaffoldBackgroundColor: AppTheme.background,
       ),
       home: const HomeScreen(),
@@ -90,13 +90,29 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildSidebar() {
     return Container(
       width: 80,
-      color: AppTheme.primary,
+      decoration: BoxDecoration(
+        color: AppTheme.primary,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(2, 0),
+          ),
+        ],
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 40),
-            child: Icon(Icons.person, color: Colors.white, size: 40),
+          Padding(
+            padding: const EdgeInsets.only(top: 40),
+            child: Text(
+              'O',
+              style: GoogleFonts.interTight(
+                color: Colors.white,
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(bottom: 40),
@@ -118,12 +134,29 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildTextField('Research Topic', _topicController),
           const SizedBox(height: 20),
-          _buildTextField('Requirements', _requirementsController, maxLines: 3),
-          const SizedBox(height: 20),
-          const Center(
-              child: Icon(Icons.arrow_downward,
-                  color: AppTheme.textSecondary, size: 30)),
-          const SizedBox(height: 20),
+          _buildTextField('Additional Information', _requirementsController,
+              maxLines: 3),
+          const SizedBox(height: 24),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey[400]!, width: 2.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.arrow_downward,
+                  color: AppTheme.textSecondary, size: 24),
+            ),
+          ),
+          const SizedBox(height: 24),
           _buildOutputField('Literature Review Analysis', _summary),
           const SizedBox(height: 20),
           _buildOutputField('Key Findings, Gaps & Future Research', _findings),
@@ -141,8 +174,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border:
-                        Border.all(color: AppTheme.primary.withOpacity(0.3)),
+                    border: Border.all(
+                        color: AppTheme.primary.withOpacity(0.7), width: 2),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -152,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 8),
                       Text(
                         _selectedModel!,
-                        style: GoogleFonts.roboto(
+                        style: GoogleFonts.interTight(
                           fontSize: 12,
                           color: AppTheme.primary,
                           fontWeight: FontWeight.w500,
@@ -180,13 +213,20 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppTheme.card,
-        border: Border(left: BorderSide(color: Colors.grey[300]!)),
+        border: Border(left: BorderSide(color: Colors.grey[400]!, width: 3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(-2, 0),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Related Topics - Papers',
-              style: GoogleFonts.roboto(
+              style: GoogleFonts.interTight(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimary)),
@@ -213,30 +253,42 @@ class _HomeScreenState extends State<HomeScreen> {
   // --- UI Components ---
   Widget _buildTextField(String label, TextEditingController controller,
       {int maxLines = 1}) {
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      enableInteractiveSelection: true,
-      contextMenuBuilder: (context, editableTextState) {
-        return AdaptiveTextSelectionToolbar.editableText(
-          editableTextState: editableTextState,
-        );
-      },
-      style: const TextStyle(color: AppTheme.textPrimary),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: AppTheme.textSecondary),
-        filled: true,
-        fillColor: AppTheme.card,
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!)),
-        enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!)),
-        focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppTheme.primary, width: 2)),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        enableInteractiveSelection: true,
+        contextMenuBuilder: (context, editableTextState) {
+          return AdaptiveTextSelectionToolbar.editableText(
+            editableTextState: editableTextState,
+          );
+        },
+        style: const TextStyle(color: AppTheme.textPrimary),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: AppTheme.textSecondary),
+          filled: true,
+          fillColor: AppTheme.card,
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[400]!, width: 2)),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[400]!, width: 2)),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppTheme.primary, width: 2)),
+        ),
       ),
     );
   }
@@ -249,7 +301,14 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: AppTheme.card,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: Colors.grey[400]!, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: SingleChildScrollView(
             child: Text(content,
@@ -265,7 +324,10 @@ class _HomeScreenState extends State<HomeScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.primary,
         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+          side: BorderSide(color: AppTheme.primary.withOpacity(0.3), width: 2),
+        ),
         elevation: 5,
       ),
       child: _isLoading
@@ -276,8 +338,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRetryButton() {
-    return TextButton(
+    return OutlinedButton(
       onPressed: _retry,
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(
+            color: AppTheme.textSecondary.withOpacity(0.7), width: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      ),
       child: const Row(
         children: [
           Text('Retry',
@@ -291,23 +359,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPaperItem(String title) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6.0),
-      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      elevation: 3,
       color: AppTheme.card,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shadowColor: Colors.black.withOpacity(0.15),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey[400]!, width: 2),
+      ),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
             color: AppTheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+                color: AppTheme.primary.withOpacity(0.5), width: 1.5),
           ),
           child: const Icon(Icons.picture_as_pdf,
               color: AppTheme.primary, size: 24),
         ),
         title: Text(
           title,
-          style: GoogleFonts.roboto(
+          style: GoogleFonts.interTight(
             fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,
             fontSize: 14,
@@ -1064,8 +1138,12 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
         builder: (context, setDialogState) {
           return AlertDialog(
             backgroundColor: AppTheme.card,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.grey[300]!, width: 1.5),
+            ),
+            elevation: 8,
+            shadowColor: Colors.black.withOpacity(0.15),
             title: Row(
               children: [
                 Container(
@@ -1080,7 +1158,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                 const SizedBox(width: 12),
                 Text(
                   'Settings',
-                  style: GoogleFonts.roboto(
+                  style: GoogleFonts.interTight(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
@@ -1096,90 +1174,226 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                 children: [
                   Text(
                     'Ollama Configuration',
-                    style: GoogleFonts.roboto(
+                    style: GoogleFonts.interTight(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppTheme.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: ipController,
-                    enableInteractiveSelection: true,
-                    contextMenuBuilder: (context, editableTextState) {
-                      return AdaptiveTextSelectionToolbar.editableText(
-                        editableTextState: editableTextState,
-                      );
-                    },
-                    style: GoogleFonts.roboto(color: AppTheme.textPrimary),
-                    decoration: InputDecoration(
-                      labelText: 'Ollama IP Address',
-                      labelStyle:
-                          GoogleFonts.roboto(color: AppTheme.textSecondary),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                            color: AppTheme.textSecondary.withOpacity(0.3)),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.background,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: AppTheme.textSecondary.withOpacity(0.5),
+                          width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                                color: AppTheme.primary.withOpacity(0.3),
+                                width: 1),
+                          ),
+                          child: const Icon(Icons.cloud,
+                              color: AppTheme.primary, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'LLM Provider',
+                              style: GoogleFonts.interTight(
+                                fontSize: 11,
+                                color: AppTheme.textSecondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Ollama',
+                              style: GoogleFonts.interTight(
+                                fontSize: 15,
+                                color: AppTheme.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: ipController,
+                      enableInteractiveSelection: true,
+                      contextMenuBuilder: (context, editableTextState) {
+                        return AdaptiveTextSelectionToolbar.editableText(
+                          editableTextState: editableTextState,
+                        );
+                      },
+                      style:
+                          GoogleFonts.interTight(color: AppTheme.textPrimary),
+                      decoration: InputDecoration(
+                        labelText: 'Ollama IP Address',
+                        labelStyle: GoogleFonts.interTight(
+                            color: AppTheme.textSecondary),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                              color: AppTheme.textSecondary.withOpacity(0.5),
+                              width: 1.5),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                              color: AppTheme.textSecondary.withOpacity(0.5),
+                              width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                              color: AppTheme.primary, width: 2),
+                        ),
+                        prefixIcon: const Icon(Icons.computer,
+                            color: AppTheme.textSecondary),
+                        filled: true,
+                        fillColor: AppTheme.background,
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            const BorderSide(color: AppTheme.primary, width: 2),
-                      ),
-                      prefixIcon: const Icon(Icons.computer,
-                          color: AppTheme.textSecondary),
-                      filled: true,
-                      fillColor: AppTheme.background,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    value: tempModel,
-                    style: GoogleFonts.roboto(color: AppTheme.textPrimary),
-                    items: _availableModels
-                        .map((model) => DropdownMenuItem(
-                              value: model,
-                              child: Text(model, style: GoogleFonts.roboto()),
-                            ))
-                        .toList(),
-                    onChanged: (value) =>
-                        setDialogState(() => tempModel = value),
-                    decoration: InputDecoration(
-                      labelText: 'Select LLM Model',
-                      labelStyle:
-                          GoogleFonts.roboto(color: AppTheme.textSecondary),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(
-                            color: AppTheme.textSecondary.withOpacity(0.3)),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'LLM Model',
+                          style: GoogleFonts.interTight(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            const BorderSide(color: AppTheme.primary, width: 2),
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          await _loadAvailableModels();
+                          setDialogState(() {});
+                        },
+                        icon: const Icon(Icons.refresh, size: 18),
+                        label: Text('Refresh',
+                            style: GoogleFonts.interTight(fontSize: 12)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.primary,
+                          side: BorderSide(
+                              color: AppTheme.primary.withOpacity(0.5),
+                              width: 1.5),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          elevation: 2,
+                        ),
                       ),
-                      prefixIcon: const Icon(Icons.psychology,
-                          color: AppTheme.textSecondary),
-                      filled: true,
-                      fillColor: AppTheme.background,
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    height: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.background,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: AppTheme.textSecondary.withOpacity(0.5),
+                          width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    hint: Text(
-                      "Select a model",
-                      style: GoogleFonts.roboto(color: AppTheme.textSecondary),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: tempModel,
+                        isExpanded: true,
+                        icon: const Icon(Icons.arrow_drop_down,
+                            color: AppTheme.textSecondary),
+                        style:
+                            GoogleFonts.interTight(color: AppTheme.textPrimary),
+                        hint: Text(
+                          "Select a model",
+                          style: GoogleFonts.interTight(
+                              color: AppTheme.textSecondary),
+                        ),
+                        items: _availableModels
+                            .map((model) => DropdownMenuItem(
+                                  value: model,
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.psychology,
+                                          color: AppTheme.primary, size: 18),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(model,
+                                            style: GoogleFonts.interTight(),
+                                            overflow: TextOverflow.ellipsis),
+                                      ),
+                                    ],
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (value) =>
+                            setDialogState(() => tempModel = value),
+                        menuMaxHeight: 300,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             actions: [
-              TextButton(
+              OutlinedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                style: TextButton.styleFrom(
+                style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.textSecondary,
+                  side: BorderSide(
+                      color: AppTheme.textSecondary.withOpacity(0.5),
+                      width: 1.5),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
-                child: Text('Cancel', style: GoogleFonts.roboto()),
+                child: Text('Cancel', style: GoogleFonts.interTight()),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -1196,11 +1410,14 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8)),
-                  elevation: 0,
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(
+                        color: AppTheme.primary.withOpacity(0.3), width: 2),
+                  ),
+                  elevation: 3,
                 ),
                 child: Text('Save',
-                    style: GoogleFonts.roboto(fontWeight: FontWeight.w600)),
+                    style: GoogleFonts.interTight(fontWeight: FontWeight.w600)),
               ),
             ],
           );
@@ -1291,7 +1508,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
               Expanded(
                 child: Text(
                   'Open Paper',
-                  style: GoogleFonts.roboto(
+                  style: GoogleFonts.interTight(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
@@ -1306,7 +1523,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
             children: [
               Text(
                 _extractPaperTitle(paperTitle),
-                style: GoogleFonts.roboto(
+                style: GoogleFonts.interTight(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: AppTheme.textPrimary,
@@ -1315,7 +1532,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
               const SizedBox(height: 16),
               Text(
                 'Choose where to search for this paper:',
-                style: GoogleFonts.roboto(
+                style: GoogleFonts.interTight(
                   fontSize: 14,
                   color: AppTheme.textSecondary,
                 ),
@@ -1330,7 +1547,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
-              child: Text('Cancel', style: GoogleFonts.roboto()),
+              child: Text('Cancel', style: GoogleFonts.interTight()),
             ),
             const SizedBox(width: 8),
             _buildSearchButton('Google Scholar', searchUrls[0]),
@@ -1357,11 +1574,11 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 0,
+        elevation: 2,
       ),
       child: Text(
         label,
-        style: GoogleFonts.roboto(
+        style: GoogleFonts.interTight(
           fontWeight: FontWeight.w500,
           fontSize: 13,
         ),
@@ -1394,7 +1611,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
               Expanded(
                 child: Text(
                   'Save Paper',
-                  style: GoogleFonts.roboto(
+                  style: GoogleFonts.interTight(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
@@ -1411,7 +1628,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
               children: [
                 Text(
                   _extractPaperTitle(paperTitle),
-                  style: GoogleFonts.roboto(
+                  style: GoogleFonts.interTight(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: AppTheme.textPrimary,
@@ -1420,7 +1637,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                 const SizedBox(height: 16),
                 Text(
                   'Enter the direct PDF URL to download:',
-                  style: GoogleFonts.roboto(
+                  style: GoogleFonts.interTight(
                     fontSize: 14,
                     color: AppTheme.textSecondary,
                   ),
@@ -1434,13 +1651,13 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                       editableTextState: editableTextState,
                     );
                   },
-                  style: GoogleFonts.roboto(color: AppTheme.textPrimary),
+                  style: GoogleFonts.interTight(color: AppTheme.textPrimary),
                   decoration: InputDecoration(
                     labelText: 'PDF URL',
                     hintText: 'https://example.com/paper.pdf',
                     labelStyle:
-                        GoogleFonts.roboto(color: AppTheme.textSecondary),
-                    hintStyle: GoogleFonts.roboto(
+                        GoogleFonts.interTight(color: AppTheme.textSecondary),
+                    hintStyle: GoogleFonts.interTight(
                         color: AppTheme.textSecondary.withOpacity(0.7)),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -1498,7 +1715,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              child: Text('Cancel', style: GoogleFonts.roboto()),
+              child: Text('Cancel', style: GoogleFonts.interTight()),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -1514,7 +1731,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
-                elevation: 0,
+                elevation: 2,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -1522,7 +1739,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   const Icon(Icons.download, size: 18),
                   const SizedBox(width: 8),
                   Text('Download',
-                      style: GoogleFonts.roboto(fontWeight: FontWeight.w600)),
+                      style:
+                          GoogleFonts.interTight(fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
