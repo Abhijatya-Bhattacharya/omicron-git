@@ -64,7 +64,11 @@ Contributions are welcome! Please follow these steps:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Copyright (c) 2024 [G-34 Gropup of Meghnad Saha Institute of Technology]
+All Rights Reserved.
+
+No part of this software may be reproduced, distributed, or transmitted in any form 
+or by any means without the prior written permission of the copyright owner.
 
 ## 🙏 Acknowledgments
 
@@ -76,4 +80,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ by the Omicron Team**
+**Made with ❤️ by the MSIT G-34 Team**
