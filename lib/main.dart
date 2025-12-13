@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -17,6 +18,14 @@ class AppTheme {
   static const Color textPrimary = Color(0xFF212121);
   static const Color textSecondary = Color(0xFF757575);
   static const Color accent = Color(0xFFE53935);
+}
+
+// Helper function to safely convert any value to String
+String _safeString(dynamic value, [String fallback = '']) {
+  if (value == null) return fallback;
+  if (value is String) return value;
+  if (value is List) return value.join(' ');
+  return value.toString();
 }
 
 // --- Main Application ---
@@ -56,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _summary = 'Your generated summary will appear here...';
   String _findings = 'Identified findings and gaps will be shown here...';
   List<String> _relatedPapers = [];
+  List<Map<String, String>> _paperDetails = [];
   bool _isLoading = false;
   String _errorMessage = '';
 
@@ -480,15 +490,47 @@ Return ONLY valid JSON in this exact structure (replace ALL field values with ac
   "discussion_strengths_limitations": "Write 3 full paragraphs on strengths, limitations, and areas needing improvement",
   "discussion_future_research": "Write 2 full paragraphs with recommendations for future work",
   "conclusions": "Write 2 full paragraphs with overall conclusions and recommendations",
-  "related_papers": "Write like given example" [
-    "Author, A. et al. (2024). Relevant Paper Title. Journal Name, 45(2), 123-145.",
-    "Smith, J. (2023). Another Paper Title. Conference Name, 456-467.",
-    "Johnson, M. (2023). Third Paper. Journal Name, 34(5), 789-801.",
-    "Williams, P. (2022). Fourth Paper. Nature, 567, 234-240.",
-    "Brown, L. (2024). Fifth Paper. Science, 789(12), 567-589.",
-    "Davis, C. (2023). Sixth Paper. Publisher, pp. 123-145.",
-    "Miller, T. (2023). Seventh Paper. Journal, 23(4), 345-367.",
-    "Wilson, K. (2022). Eighth Paper. Review, 15, 89-112."
+  "related_papers": [
+    {
+      "citation": "Author, A. et al. (2024). Relevant Paper Title. Journal Name, 45(2), 123-145.",
+      "methodology": "Brief methodology used (e.g., Experimental study, Meta-analysis, Survey, Case study)",
+      "key_outcome": "One sentence summarizing the main finding or contribution"
+    },
+    {
+      "citation": "Smith, J. (2023). Another Paper Title. Conference Name, 456-467.",
+      "methodology": "Brief methodology",
+      "key_outcome": "Main finding summary"
+    },
+    {
+      "citation": "Johnson, M. (2023). Third Paper. Journal Name, 34(5), 789-801.",
+      "methodology": "Brief methodology",
+      "key_outcome": "Main finding summary"
+    },
+    {
+      "citation": "Williams, P. (2022). Fourth Paper. Nature, 567, 234-240.",
+      "methodology": "Brief methodology",
+      "key_outcome": "Main finding summary"
+    },
+    {
+      "citation": "Brown, L. (2024). Fifth Paper. Science, 789(12), 567-589.",
+      "methodology": "Brief methodology",
+      "key_outcome": "Main finding summary"
+    },
+    {
+      "citation": "Davis, C. (2023). Sixth Paper. Publisher, pp. 123-145.",
+      "methodology": "Brief methodology",
+      "key_outcome": "Main finding summary"
+    },
+    {
+      "citation": "Miller, T. (2023). Seventh Paper. Journal, 23(4), 345-367.",
+      "methodology": "Brief methodology",
+      "key_outcome": "Main finding summary"
+    },
+    {
+      "citation": "Wilson, K. (2022). Eighth Paper. Review, 15, 89-112.",
+      "methodology": "Brief methodology",
+      "key_outcome": "Main finding summary"
+    }
   ]
 }
 
@@ -541,13 +583,48 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
 
         // Safely handle the related_papers field
         final papersData = decodedResponse['related_papers'];
-        print('DEBUG: Papers data type: \\${papersData.runtimeType}');
+        print('DEBUG: Papers data type: ${papersData.runtimeType}');
+
+        _paperDetails = [];
+        _relatedPapers = [];
 
         if (papersData is List && papersData.isNotEmpty) {
-          _relatedPapers = papersData.map((paper) => paper.toString()).toList();
-          print('DEBUG: Extracted \\${_relatedPapers.length} papers');
+          for (var paper in papersData) {
+            if (paper is Map) {
+              // New format with methodology and key_outcome
+              final citation = paper['citation']?.toString() ?? '';
+              final methodology =
+                  paper['methodology']?.toString() ?? 'Not specified';
+              final keyOutcome =
+                  paper['key_outcome']?.toString() ?? 'See discussion';
+              _relatedPapers.add(citation);
+              _paperDetails.add({
+                'citation': citation,
+                'methodology': methodology,
+                'key_outcome': keyOutcome,
+              });
+            } else {
+              // Old format - just a string
+              final citationStr = paper.toString();
+              _relatedPapers.add(citationStr);
+              _paperDetails.add({
+                'citation': citationStr,
+                'methodology': 'Not specified',
+                'key_outcome': 'See discussion',
+              });
+            }
+          }
+          print(
+              'DEBUG: Extracted ${_relatedPapers.length} papers with details');
         } else if (papersData is String && papersData.trim().isNotEmpty) {
           _relatedPapers = [papersData];
+          _paperDetails = [
+            {
+              'citation': papersData,
+              'methodology': 'Not specified',
+              'key_outcome': 'See discussion'
+            }
+          ];
           print('DEBUG: Single paper as string');
         } else {
           // Fallback: show example papers if LLM fails
@@ -556,6 +633,28 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
             "Johnson, M. et al. (2023). Third Paper on Related Topic. ACM Transactions, 34(5), 789-801.",
             "Williams, P. (2022). Fourth Relevant Paper Title. Nature, 567, 234-240.",
             "Brown, L. & Green, R. (2024). Fifth Paper Title. Science, 789(12), 567-589."
+          ];
+          _paperDetails = [
+            {
+              'citation': _relatedPapers[0],
+              'methodology': 'Experimental',
+              'key_outcome': 'Demonstrated key findings'
+            },
+            {
+              'citation': _relatedPapers[1],
+              'methodology': 'Survey study',
+              'key_outcome': 'Identified trends'
+            },
+            {
+              'citation': _relatedPapers[2],
+              'methodology': 'Meta-analysis',
+              'key_outcome': 'Synthesized evidence'
+            },
+            {
+              'citation': _relatedPapers[3],
+              'methodology': 'Case study',
+              'key_outcome': 'Practical applications'
+            },
           ];
           print('DEBUG: No papers found or invalid format, using fallback.');
         }
@@ -576,6 +675,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
       _summary = 'Your generated summary will appear here...';
       _findings = 'Identified findings and gaps will be shown here...';
       _relatedPapers = [];
+      _paperDetails = [];
       _errorMessage = '';
     });
   }
@@ -633,7 +733,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                     pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
             pw.TextSpan(
                 text:
-                    '${_llmGeneratedContent['abstract_objective'] ?? "To systematically review and synthesize evidence on ${_topicController.text.toLowerCase()}."}\n\n',
+                    '${_safeString(_llmGeneratedContent['abstract_objective'], "To systematically review and synthesize evidence on ${_topicController.text.toLowerCase()}.")}\n\n',
                 style: const pw.TextStyle(fontSize: 11)),
             pw.TextSpan(
                 text: 'Methods: ',
@@ -641,7 +741,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                     pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
             pw.TextSpan(
                 text:
-                    '${_llmGeneratedContent['abstract_methods'] ?? "A comprehensive literature search was conducted across multiple databases following PRISMA guidelines."}\n\n',
+                    '${_safeString(_llmGeneratedContent['abstract_methods'], "A comprehensive literature search was conducted across multiple databases following PRISMA guidelines.")}\n\n',
                 style: const pw.TextStyle(fontSize: 11)),
             pw.TextSpan(
                 text: 'Results: ',
@@ -649,7 +749,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                     pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
             pw.TextSpan(
                 text:
-                    '${_llmGeneratedContent['abstract_results'] ?? "${_relatedPapers.length} studies were identified for inclusion."}\n\n',
+                    '${_safeString(_llmGeneratedContent['abstract_results'], "${_relatedPapers.length} studies were identified for inclusion.")}\n\n',
                 style: const pw.TextStyle(fontSize: 11)),
             pw.TextSpan(
                 text: 'Conclusions: ',
@@ -657,7 +757,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                     pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
             pw.TextSpan(
                 text:
-                    '${_llmGeneratedContent['abstract_conclusions'] ?? "Further high-quality research is needed."}\n',
+                    '${_safeString(_llmGeneratedContent['abstract_conclusions'], "Further high-quality research is needed.")}\n',
                 style: const pw.TextStyle(fontSize: 11)),
           ])),
 
@@ -674,8 +774,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['introduction_background'] ??
-                'This systematic review was conducted to synthesize the current evidence base.',
+            _safeString(_llmGeneratedContent['introduction_background'],
+                'This systematic review was conducted to synthesize the current evidence base.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -686,8 +786,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['introduction_objectives'] ??
-                'The primary objective was to systematically review the available evidence.',
+            _safeString(_llmGeneratedContent['introduction_objectives'],
+                'The primary objective was to systematically review the available evidence.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -704,8 +804,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['methods_protocol'] ??
-                'This systematic review was conducted following PRISMA 2009 guidelines.',
+            _safeString(_llmGeneratedContent['methods_protocol'],
+                'This systematic review was conducted following PRISMA 2009 guidelines.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -716,8 +816,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['methods_pico'] ??
-                'Population: ${_topicController.text.isNotEmpty ? _topicController.text : "As specified"}\nIntervention: ${_requirementsController.text.isNotEmpty ? _requirementsController.text : "As defined"}\nComparison: Standard care\nOutcomes: Primary and secondary outcomes',
+            _safeString(_llmGeneratedContent['methods_pico'],
+                'Population: ${_topicController.text.isNotEmpty ? _topicController.text : "As specified"}\nIntervention: ${_requirementsController.text.isNotEmpty ? _requirementsController.text : "As defined"}\nComparison: Standard care\nOutcomes: Primary and secondary outcomes'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -728,8 +828,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['methods_search_strategy'] ??
-                'A comprehensive search was conducted across multiple databases.',
+            _safeString(_llmGeneratedContent['methods_search_strategy'],
+                'A comprehensive search was conducted across multiple databases.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -740,8 +840,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['methods_study_selection'] ??
-                'Two independent reviewers screened studies.',
+            _safeString(_llmGeneratedContent['methods_study_selection'],
+                'Two independent reviewers screened studies.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -752,8 +852,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['methods_data_extraction'] ??
-                'Data were extracted using a standardized form.',
+            _safeString(_llmGeneratedContent['methods_data_extraction'],
+                'Data were extracted using a standardized form.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -764,8 +864,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['methods_risk_of_bias'] ??
-                'Risk of bias was assessed using validated tools.',
+            _safeString(_llmGeneratedContent['methods_risk_of_bias'],
+                'Risk of bias was assessed using validated tools.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -776,8 +876,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['methods_synthesis'] ??
-                'Qualitative narrative synthesis was performed.',
+            _safeString(_llmGeneratedContent['methods_synthesis'],
+                'Qualitative narrative synthesis was performed.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -795,8 +895,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['results_study_selection'] ??
-                'The systematic search identified ${_relatedPapers.length} studies.',
+            _safeString(_llmGeneratedContent['results_study_selection'],
+                'The systematic search identified ${_relatedPapers.length} studies.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -807,8 +907,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['results_characteristics'] ??
-                'Table 1 presents the characteristics of included studies.',
+            _safeString(_llmGeneratedContent['results_characteristics'],
+                'Table 1 presents the characteristics of included studies.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -818,27 +918,79 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
             pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text('Table 1. Characteristics of Included Studies',
+                pw.Text('Table 1. Systematic Literature Review Summary',
                     style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
                         fontStyle: pw.FontStyle.italic)),
                 pw.SizedBox(height: 6),
-                ...(_relatedPapers
-                    .asMap()
-                    .entries
-                    .map(
-                      (entry) => pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 4),
-                        child: pw.Text(
-                          '[${entry.key + 1}] ${entry.value}',
-                          style: const pw.TextStyle(
-                              fontSize: 10, lineSpacing: 1.2),
-                          textAlign: pw.TextAlign.justify,
-                        ),
+                pw.Table(
+                  border: pw.TableBorder.all(width: 0.5),
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(2.6),
+                    1: const pw.FlexColumnWidth(1.2),
+                    2: const pw.FlexColumnWidth(1.7),
+                  },
+                  children: [
+                    pw.TableRow(
+                      decoration: const pw.BoxDecoration(
+                        color: PdfColor.fromInt(0xFFE0E0E0),
                       ),
-                    )
-                    .toList()),
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text('Study',
+                              style: pw.TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: pw.FontWeight.bold)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text('Methodology',
+                              style: pw.TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: pw.FontWeight.bold)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text('Key Outcome',
+                              style: pw.TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: pw.FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                    ..._paperDetails.take(8).toList().map(
+                      (paperData) {
+                        final studyTitle = _extractPaperTitle(
+                            _safeString(paperData['citation'], ''));
+                        final methodology = _safeString(
+                            paperData['methodology'], 'Not specified');
+                        final keyOutcome = _safeString(
+                            paperData['key_outcome'], 'See discussion');
+                        return pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(studyTitle,
+                                  style: const pw.TextStyle(fontSize: 10)),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(methodology,
+                                  style: const pw.TextStyle(fontSize: 10)),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.all(6),
+                              child: pw.Text(keyOutcome,
+                                  style: const pw.TextStyle(fontSize: 10)),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ],
             )
           else
@@ -853,8 +1005,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['results_risk_of_bias'] ??
-                'Risk of bias assessment revealed variability in methodological quality.',
+            _safeString(_llmGeneratedContent['results_risk_of_bias'],
+                'Risk of bias assessment revealed variability in methodological quality.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -872,8 +1024,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                 textAlign: pw.TextAlign.justify)
           else
             pw.Text(
-              _llmGeneratedContent['results_synthesis'] ??
-                  'Qualitative synthesis was performed.',
+              _safeString(_llmGeneratedContent['results_synthesis'],
+                  'Qualitative synthesis was performed.'),
               style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
               textAlign: pw.TextAlign.justify,
             ),
@@ -892,8 +1044,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                 textAlign: pw.TextAlign.justify)
           else
             pw.Text(
-              _llmGeneratedContent['results_key_findings'] ??
-                  'Key findings have important implications.',
+              _safeString(_llmGeneratedContent['results_key_findings'],
+                  'Key findings have important implications.'),
               style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
               textAlign: pw.TextAlign.justify,
             ),
@@ -911,8 +1063,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['discussion_summary'] ??
-                'This systematic review comprehensively examined the research question.',
+            _safeString(_llmGeneratedContent['discussion_summary'],
+                'This systematic review comprehensively examined the research question.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -923,8 +1075,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['discussion_comparison'] ??
-                'The findings contribute to the growing body of evidence.',
+            _safeString(_llmGeneratedContent['discussion_comparison'],
+                'The findings contribute to the growing body of evidence.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -935,8 +1087,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['discussion_implications'] ??
-                'The evidence has implications for clinical practice.',
+            _safeString(_llmGeneratedContent['discussion_implications'],
+                'The evidence has implications for clinical practice.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -947,8 +1099,9 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['discussion_strengths_limitations'] ??
-                'Strengths include comprehensive search. Limitations include study heterogeneity.',
+            _safeString(
+                _llmGeneratedContent['discussion_strengths_limitations'],
+                'Strengths include comprehensive search. Limitations include study heterogeneity.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -959,8 +1112,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
           pw.Text(
-            _llmGeneratedContent['discussion_future_research'] ??
-                'Future research should address identified gaps.',
+            _safeString(_llmGeneratedContent['discussion_future_research'],
+                'Future research should address identified gaps.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
@@ -972,8 +1125,8 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
                   pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 8),
           pw.Text(
-            _llmGeneratedContent['conclusions'] ??
-                'This systematic review provides a comprehensive synthesis of the evidence regarding ${_topicController.text.isNotEmpty ? _topicController.text.toLowerCase() : "the research question"}.',
+            _safeString(_llmGeneratedContent['conclusions'],
+                'This systematic review provides a comprehensive synthesis of the evidence regarding ${_topicController.text.isNotEmpty ? _topicController.text.toLowerCase() : "the research question"}.'),
             style: const pw.TextStyle(fontSize: 11, lineSpacing: 1.3),
             textAlign: pw.TextAlign.justify,
           ),
