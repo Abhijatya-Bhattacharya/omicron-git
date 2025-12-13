@@ -557,14 +557,7 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
         }
 
         decodedResponse = jsonDecode(cleanedResponse);
-        print('DEBUG: Successfully decoded JSON response');
-        print('DEBUG: Keys found: ${decodedResponse.keys.toList()}');
-        print(
-            'DEBUG: Related papers count: ${decodedResponse['related_papers']?.length ?? 0}');
       } catch (e) {
-        print('DEBUG: JSON parse error: $e');
-        print(
-            'DEBUG: Raw response: ${response.substring(0, response.length > 500 ? 500 : response.length)}...');
         throw Exception(
             'Invalid JSON response from Ollama. Please try again or use a different model.');
       }
@@ -583,7 +576,6 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
 
         // Safely handle the related_papers field
         final papersData = decodedResponse['related_papers'];
-        print('DEBUG: Papers data type: ${papersData.runtimeType}');
 
         _paperDetails = [];
         _relatedPapers = [];
@@ -614,8 +606,6 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
               });
             }
           }
-          print(
-              'DEBUG: Extracted ${_relatedPapers.length} papers with details');
         } else if (papersData is String && papersData.trim().isNotEmpty) {
           _relatedPapers = [papersData];
           _paperDetails = [
@@ -625,7 +615,6 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
               'key_outcome': 'See discussion'
             }
           ];
-          print('DEBUG: Single paper as string');
         } else {
           // Fallback: show example papers if LLM fails
           _relatedPapers = [
@@ -656,7 +645,6 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
               'key_outcome': 'Practical applications'
             },
           ];
-          print('DEBUG: No papers found or invalid format, using fallback.');
         }
       });
 
@@ -1212,8 +1200,6 @@ CRITICAL: Write REAL content, not instructions. Include specific details, number
     if (_selectedModel == null) {
       throw Exception('Please select an Ollama model from the settings.');
     }
-
-    print('DEBUG: Sending request to Ollama with model: $_selectedModel');
 
     final response = await http
         .post(
